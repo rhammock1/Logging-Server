@@ -1,5 +1,6 @@
 """
   Simple HTTP server for logging of local projets
+  Credit: <mdonkers> github.com/mdonkers
 """
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
