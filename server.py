@@ -13,8 +13,10 @@ from db import *
 load_dotenv()
 
 def save_message(message, project):
-  db_file("db/messages/insert.sql", (message, project,))
-
+  results = db_file("db/messages/insert.sql", (message, project,))
+  if len(results) == 0:
+    logging.error("No records inserted into messages table")
+    return
   logging.info("Records inserted successfully into messages table")
 
 class LogServer(BaseHTTPRequestHandler):
@@ -30,6 +32,7 @@ class LogServer(BaseHTTPRequestHandler):
       str(self.headers)
     )
     self._set_response()
+
     self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
 
   def do_POST(self):

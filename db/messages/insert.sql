@@ -1,2 +1,3 @@
 INSERT INTO messages (message, project)
-VALUES ('{}', '{}');
+VALUES ('{}', '{}')
+RETURNING message_id;

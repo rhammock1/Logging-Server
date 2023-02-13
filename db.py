@@ -34,7 +34,9 @@ def db_file(filepath, *args):
   try:
     query = file_contents.format(*params)
     database.execute(query)
+    results = database.fetchall()
     connection.commit()
+    return results
   except (Exception, psycopg2.Error) as error:
     logging.error("Error while executing query: %s", query, error)
 
