@@ -34,17 +34,19 @@ def db_file(filepath, *args):
   try:
     query = file_contents.format(*params)
     database.execute(query)
-    results = database.fetchall()
+    results = []
+    if 'SELECT' in query or 'RETURNING' in query:
+      results = database.fetchall()
     connection.commit()
     return results
   except (Exception, psycopg2.Error) as error:
-    logging.error("Error while executing query: %s", query, error)
+    logging.error("Error while executing query: {}".format(query), error)
     connection.rollback() # I don't know if this is necessary
 
 def connect_to_db():
   try:
     connection_string = "dbname=%s user=%s" % (
-        os.getenv("DATABASE_NAME"), os.getenv("DATABASE_USER"))
+      os.getenv("DATABASE_NAME"), os.getenv("DATABASE_USER"))
 
     global connection
     connection = psycopg2.connect(connection_string)

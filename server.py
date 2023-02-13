@@ -14,9 +14,10 @@ load_dotenv()
 
 def save_message(message, project):
   try:
-    results = db_file("db/messages/insert.sql", (message, project,))
-    if len(results) == 0:
-      logging.error("No records inserted into messages table")
+    # We don't need a result
+    result = db_file("db/messages/insert.sql", (message, project,))
+    if result is None:
+      logging.error("Insert failed")
       return
     logging.info("Records inserted successfully into messages table")
   except Exception as error:
