@@ -46,6 +46,31 @@ def db_file(filepath, *args):
     logging.error("Error while executing query: {}".format(query), error)
     connection.rollback() # I don't know if this is necessary
 
+def migrate():
+  # Select db_version from db_versions table
+  # If it doesn't exist, create it
+  # If it does exist, run the migrations that are greater than the current version
+  try:
+    database.execute("SELECT db_version FROM db_versions ORDER BY db_version DESC LIMIT 1")
+    (db_version) = database.fetchone()
+    if db_version is None:
+      print("Creating db_versions table...")
+      database.execute("CREATE TABLE db_versions (db_version BIGSERIAL, created TIMESTAMPTZ DEFAULT NOW())")
+      database.execute("INSERT INTO db_versions (db_version) VALUES (0)")
+    logging.info("Current database version: {}".format(db_version))
+
+    # Run migrations
+    migrations = os.listdir("db/db_migrate")
+    for migration in migrations:
+      migration_number = int(migration.split(".")[0])
+      if migration_number > db_version:
+        print("Running migration: {}".format(migration))
+        db_file("db/db_migrate/{}".format(migration))
+        database.execute("INSERT INTO db_versions (db_version) VALUES ({})".format(migration_number))
+
+  except (Exception, psycopg2.Error) as error:
+    logging.error("Error while migrating the database", error)
+
 def connect_to_db():
   try:
     result = urlparse(os.getenv("DATABASE_URL"))
@@ -65,6 +90,8 @@ def connect_to_db():
     database = connection.cursor()
 
     logging.info("Connected to database...")
+
+    migrate()
   except (Exception, psycopg2.Error) as error:
     logging.error("Error while connecting to database", error)
 
