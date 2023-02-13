@@ -5,6 +5,10 @@
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
+import json
+
+def save_message(message):
+  print("Got message: %s", message)
 
 class LogServer(BaseHTTPRequestHandler):
   def _set_response(self):
@@ -30,6 +34,10 @@ class LogServer(BaseHTTPRequestHandler):
       str(self.headers),
       post_data.decode('utf-8')
     )
+    body = json.loads(post_data)
+   
+    save_message(body["message"])
+
     self._set_response()
     self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
