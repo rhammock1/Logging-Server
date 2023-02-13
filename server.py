@@ -1,5 +1,6 @@
 """
   Simple HTTP server for logging of local projets
+  Author: <smokeybear> github.com/rhammock1
   Credit: <mdonkers> github.com/mdonkers
 """
 
@@ -25,10 +26,10 @@ def connect_to_db():
   except (Exception, psycopg2.Error) as error:
     logging.error("Error while connecting to database", error)
 
-def save_message(message):
+def save_message(message, project):
   database.execute(
-    """INSERT INTO messages (message) VALUES (%s);""",
-    (message,)
+    """INSERT INTO messages (message, project) VALUES (%s);""",
+    (message, project)
   )
   connection.commit()
   print("Records inserted successfully into messages table")
@@ -53,8 +54,11 @@ class LogServer(BaseHTTPRequestHandler):
     post_data = self.rfile.read(content_length)
 
     body = json.loads(post_data)
+
+    message = body["message"]
+    project = body["project"]
    
-    save_message(body["message"])
+    save_message(message, project)
 
     self._set_response()
     self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
