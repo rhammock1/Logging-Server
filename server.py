@@ -16,6 +16,30 @@ load_dotenv()
 connection = None
 database = None
 
+def db_file(filepath, *args):
+  """
+  Reads a file and returns the contents as a string.
+  For now, these files should use the `%s` syntax for string
+  interpolation.
+  \n`Args`: 
+  \n\t filepath (str): The path to the file to read.
+  \n\t args (tuple): The parameters to interpolate into the file.
+  \n`Returns`: The contents of the file as a string.
+  """
+  file_contents = ""
+  with open(filepath, "r") as file:
+    file_contents = file.read()
+
+  (params,) = args
+
+  # Make sure file_contents isn't an empty string
+  if file_contents == "":
+    raise Exception("File is empty: %s" % filepath)
+
+  query = file_contents.format(*params)
+  database.execute(query)
+  connection.commit()
+
 def connect_to_db():
   try:
     connection_string = "dbname=%s user=%s" % (os.getenv("DATABASE_NAME"), os.getenv("DATABASE_USER"))
@@ -27,12 +51,9 @@ def connect_to_db():
     logging.error("Error while connecting to database", error)
 
 def save_message(message, project):
-  database.execute(
-    """INSERT INTO messages (message, project) VALUES (%s, %s);""",
-    (message, project,)
-  )
-  connection.commit()
-  print("Records inserted successfully into messages table")
+  db_file("db/messages/insert.sql", (message, project,))
+
+  logging.info("Records inserted successfully into messages table")
 
 class LogServer(BaseHTTPRequestHandler):
   def _set_response(self):
