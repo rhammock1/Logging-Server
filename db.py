@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 import logging
 import psycopg2
 import os
@@ -47,8 +48,15 @@ def db_file(filepath, *args):
 
 def connect_to_db():
   try:
-    connection_string = "dbname=%s user=%s" % (
-      os.getenv("DATABASE_NAME"), os.getenv("DATABASE_USER"))
+    result = urlparse(os.getenv("DATABASE_URL"))
+    username = result.username
+    password = result.password
+    dbname = result.path[1:]
+    hostname = result.hostname
+
+    connection_string = "dbname={} user={} password={} host={}".format(
+      dbname, username, password, hostname
+    )
 
     global connection
     connection = psycopg2.connect(connection_string)
