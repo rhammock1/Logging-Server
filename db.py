@@ -23,7 +23,9 @@ def db_file(filepath, *args):
     with open(filepath, "r") as file:
       file_contents = file.read()
 
-    (params,) = args
+    params = ()
+    if len(args) > 0:
+      (params,) = args
 
     # Make sure file_contents isn't an empty string
     if file_contents == "":

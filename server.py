@@ -1,7 +1,7 @@
 """
   Simple HTTP server for logging of local projets
   Author: <smokeybear> github.com/rhammock1
-  Credit: <mdonkers> github.com/mdonkers
+  Credit: <mdonkers> github.com/mdonkers for the basic web server
 """
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -14,14 +14,25 @@ load_dotenv()
 
 def save_message(message, project):
   try:
-    # We don't need a result
     result = db_file("db/messages/insert.sql", (message, project,))
     if result is None:
-      logging.error("Insert failed")
+      logging.error("Insert message failed")
       return
     logging.info("Records inserted successfully into messages table")
   except Exception as error:
     logging.error("Error while saving message", error)
+
+
+def get_messages():
+  try:
+    result = db_file("db/messages/get.sql")
+    if result is None:
+      logging.error("Get messages failed")
+      return
+    logging.info("Successfully retrieved messages")
+    return result
+  except Exception as error:
+    logging.error("Error while getting message", error)
 
 class LogServer(BaseHTTPRequestHandler):
   def _set_response(self):
@@ -35,9 +46,10 @@ class LogServer(BaseHTTPRequestHandler):
       str(self.path), 
       str(self.headers)
     )
-    self._set_response()
+    messages = get_messages()
 
-    self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
+    self._set_response()
+    self.wfile.write(json.dumps(messages, indent=2, default=str).encode('utf-8'))
 
   def do_POST(self):
     content_length = int(self.headers['Content-Length'])
