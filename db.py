@@ -29,7 +29,7 @@ def db_file(filepath, *args):
     if file_contents == "":
       raise Exception("File is empty: %s" % filepath)
   except Exception as error:
-    logging.error("Error while reading file: %s", filepath, error)
+    logging.error("Error while reading file: {}".format(filepath), error)
   
   try:
     query = file_contents.format(*params)
