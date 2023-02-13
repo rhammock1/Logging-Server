@@ -7,12 +7,31 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from dotenv import load_dotenv
 import logging
 import json
+import psycopg2
 import os
 
 load_dotenv()
 
+connection = None
+database = None
+
+def connect_to_db():
+  try:
+    connection_string = "dbname=%s user=%s" % (os.getenv("DATABASE_NAME"), os.getenv("DATABASE_USER"))
+    connection = psycopg2.connect(connection_string)
+    cursor = connection.cursor()
+    logging.info("Connected to database...")
+    return connection, cursor
+  except (Exception, psycopg2.Error) as error:
+    logging.error("Error while connecting to database", error)
+
 def save_message(message):
-  print("Got message: %s", message)
+  database.execute(
+    """INSERT INTO messages (message) VALUES (%s);""",
+    (message,)
+  )
+  connection.commit()
+  print("Records inserted successfully into messages table")
 
 class LogServer(BaseHTTPRequestHandler):
   def _set_response(self):
@@ -32,12 +51,7 @@ class LogServer(BaseHTTPRequestHandler):
   def do_POST(self):
     content_length = int(self.headers['Content-Length'])
     post_data = self.rfile.read(content_length)
-    logging.info(
-      "POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
-      str(self.path),
-      str(self.headers),
-      post_data.decode('utf-8')
-    )
+
     body = json.loads(post_data)
    
     save_message(body["message"])
@@ -49,13 +63,21 @@ def run(server_class=HTTPServer, handler_class=LogServer, port=8000):
   logging.basicConfig(level=logging.INFO)
   server_address = ('', port)
   httpd = server_class(server_address, handler_class)
-  logging.info("Starting HTTP server on port: %d\n", port)
   try:
+    logging.info("Connecting to database...")
+    global connection, database
+    connection, database = connect_to_db()
+
+    logging.info("Starting HTTP server on port: %d\n", port)
     httpd.serve_forever()
   except KeyboardInterrupt:
     pass
+  logging.info('Stopping HTTP server...')
   httpd.server_close()
-  logging.info('Stopping HTTP server...\n')
+  logging.info('Closing database connection...')
+  database.close()
+  connection.close()
+
 
 if __name__ == '__main__':
   from sys import argv

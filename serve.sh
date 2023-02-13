@@ -6,4 +6,4 @@ if [ $1 ]; then
 fi
 
 echo "Starting server..."
-python3 server.py $PORT
+python3.9 server.py $PORT
