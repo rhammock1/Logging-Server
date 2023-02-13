@@ -39,6 +39,7 @@ def db_file(filepath, *args):
     return results
   except (Exception, psycopg2.Error) as error:
     logging.error("Error while executing query: %s", query, error)
+    connection.rollback() # I don't know if this is necessary
 
 def connect_to_db():
   try:

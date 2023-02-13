@@ -13,11 +13,14 @@ from db import *
 load_dotenv()
 
 def save_message(message, project):
-  results = db_file("db/messages/insert.sql", (message, project,))
-  if len(results) == 0:
-    logging.error("No records inserted into messages table")
-    return
-  logging.info("Records inserted successfully into messages table")
+  try:
+    results = db_file("db/messages/insert.sql", (message, project,))
+    if len(results) == 0:
+      logging.error("No records inserted into messages table")
+      return
+    logging.info("Records inserted successfully into messages table")
+  except Exception as error:
+    logging.error("Error while saving message", error)
 
 class LogServer(BaseHTTPRequestHandler):
   def _set_response(self):
