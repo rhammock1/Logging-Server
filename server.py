@@ -4,8 +4,12 @@
 """
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from dotenv import load_dotenv
 import logging
 import json
+import os
+
+load_dotenv()
 
 def save_message(message):
   print("Got message: %s", message)
