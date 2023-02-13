@@ -28,7 +28,7 @@ def connect_to_db():
 
 def save_message(message, project):
   database.execute(
-    """INSERT INTO messages (message, project) VALUES (%s);""",
+    """INSERT INTO messages (message, project) VALUES (%s, %s);""",
     (message, project,)
   )
   connection.commit()
