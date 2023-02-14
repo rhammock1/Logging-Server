@@ -8,27 +8,22 @@ from actions.messages import save_message, get_messages
 class LogServer(BaseHTTPRequestHandler):
   # Define the routes
   routes = {
-      "/": {
+    r"/$": {
         "method": "on_base",
         "expects": ["GET"],
-      },
-      "/projects": {
-        "method": "on_projects",
-        "expects": ["GET", "POST"],
-        },
-      "/projects/:project_id": {
-        "method": "on_project",
-        "expects": ["GET", "POST"],
-        # Regex to match a number ending the path
-        "regex": r"/projects/(\d+)"
-        },
-      "/messages": {
-        "method": "on_messages",
-        "expects": ["GET", "POST"],
-      },
-      # r"/projects/(\d+)": {
-      #   "method": "on_project",
-      # }
+    },
+    r"/messages$": {
+      "method": "on_messages",
+      "expects": ["GET", "POST"],
+    },
+    r"/projects$": {
+      "method": "on_projects",
+      "expects": ["GET", "POST"],
+    },
+    r"/projects/(\d+)$": {
+      "method": "on_project",
+      "expects": ["GET", "POST"],
+    }
   }
 
   def _set_response(self, status_code=200):
@@ -96,53 +91,33 @@ class LogServer(BaseHTTPRequestHandler):
     else:
       self._set_response(404)
       self.wfile.write("Not Found".encode('utf-8'))
-
-  def do_GET(self):
+  
+  def get_route(self, method):
     """
-    On GET request, get all messages from the database.
+    Gets the route from the routes dictionary and calls the method.
+    Returns True if the route is found, False otherwise.
     """
-    # Check if the path is a dynamic route
-    dynamic_routes = [key for key in self.routes if '/:' in key]
-    print(dynamic_routes)
-    for route in dynamic_routes:
-      # Check if the path matches the regex
-      if re.match(self.routes[route]['regex'], self.path):
-        method_name = self.routes[route]['method']
+    matched = False
+    for key in self.routes.keys():
+      print(key)
+      if re.match(key, self.path):
+        method_name = self.routes[key]['method']
         print(method_name)
         method = getattr(self, method_name)
-        method("GET")
-        return
-    # check if the path is in the routes
-    if self.path in self.routes:
-      print(self.routes[self.path]['method'])
-      method_name = self.routes[self.path]['method']
-      method = getattr(self, method_name)
-      method("GET")
-    else:
+        method("POST")
+        matched = True
+        break
+    return matched
+
+  def do_GET(self):
+    matched = self.get_route('GET')
+    if not matched:
       self._set_response(404)
       self.wfile.write("Not Found".encode('utf-8'))
 
   def do_POST(self):
-    """
-    On POST request, get the message and project_id from the body
-    and save it to the database.
-    """
-    # Check if the path is a dynamic route
-    dynamic_routes = [key for key in self.routes if '/:' in key]
-    print(dynamic_routes)
-    for route in dynamic_routes:
-      # Check if the path matches the regex
-      if re.match(self.routes[route]['regex'], self.path):
-        method_name = self.routes[route]['method']
-        method = getattr(self, method_name)
-        method("POST")
-        return
-      # exit the 
-    if self.path in self.routes:
-      print(self.routes[self.path])
-      method_name = self.routes[self.path]['method']
-      method = getattr(self, method_name)
-      method("POST")
-    else:
+    matched = self.get_route('POST')
+    
+    if not matched:
       self._set_response(404)
       self.wfile.write("Not Found".encode('utf-8'))
