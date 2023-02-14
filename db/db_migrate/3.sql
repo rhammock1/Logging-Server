@@ -1,0 +1,1 @@
+INSERT INTO projects (project) VALUES ('TESTING');
