@@ -57,25 +57,53 @@ class LogServer(BaseHTTPRequestHandler):
     self.send_header('Content-type', 'application/json')
     self.end_headers()
 
-  def on_base(self):
-    print("Getting Base")
-    self._set_response()
-    self.wfile.write("Getting Base".encode('utf-8'))
+  def on_base(self, method):
+    if method == "GET":
+      print("Getting Base")
+      self._set_response()
+      self.wfile.write("Getting Base".encode('utf-8'))
+    elif method == "POST":
+      print("Posting Base")
+      self._set_response()
+      self.wfile.write("Posting Base".encode('utf-8'))
+    else:
+      self._set_response(404)
+      self.wfile.write("Not Found".encode('utf-8'))
 
-  def on_projects(self):
-    print("Getting projects")
-    self._set_response()
-    self.wfile.write("Getting projects".encode('utf-8'))
+  def on_projects(self, method):
+    if method == "GET":
+      print("Getting projects")
+      self._set_response()
+      self.wfile.write("Getting projects".encode('utf-8'))
+    elif method == "POST":
+      print("Posting projects")
+      self._set_response()
+      self.wfile.write("Posting projects".encode('utf-8'))
+    else:
+      self._set_response(404)
+      self.wfile.write("Not Found".encode('utf-8'))
 
-  def on_project(self):
-    print("Getting project", self.path)
-    self._set_response()
-    self.wfile.write("Getting project".encode('utf-8'))
+  def on_project(self, method):
+    if method == "GET":
+      print("Getting project")
+      self._set_response()
+      self.wfile.write("Getting project".encode('utf-8'))
+    elif method == "POST":
+      print("Posting project")
+      self._set_response()
+      self.wfile.write("Posting project".encode('utf-8'))
+    else:
+      self._set_response(404)
+      self.wfile.write("Not Found".encode('utf-8'))
 
-  def on_messages(self):
-    print("Getting messages")
-    self._set_response()
-    self.wfile.write("Getting messages".encode('utf-8'))
+  def on_messages(self, method):
+    if method == "GET":
+      print("Getting messages")
+      self._set_response()
+      self.wfile.write("Getting messages".encode('utf-8'))
+    else:
+      self._set_response(404)
+      self.wfile.write("Not Found".encode('utf-8'))
 
   def do_GET(self):
     """
@@ -88,12 +116,9 @@ class LogServer(BaseHTTPRequestHandler):
     )
     # check if the path is in the routes
     if self.path in self.routes:
-      # get the method name from the routes
       method_name = self.routes[self.path]
-      # get the method from 'self'.
       method = getattr(self, method_name)
-      # call the method as we return it
-      return method()
+      method("GET")
     else:
       self._set_response(404)
       self.wfile.write("Not Found".encode('utf-8'))
