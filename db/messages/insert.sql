@@ -1,2 +1,2 @@
-INSERT INTO messages (message, project)
+INSERT INTO messages (message, project_id)
 VALUES ('{}', '{}');

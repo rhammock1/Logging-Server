@@ -12,9 +12,9 @@ from db import *
 
 load_dotenv()
 
-def save_message(message, project):
+def save_message(message, project_id):
   try:
-    result = db_file("db/messages/insert.sql", (message, project,))
+    result = db_file("db/messages/insert.sql", (message, project_id,))
     if result is None:
       logging.error("Insert message failed")
       return
@@ -58,9 +58,9 @@ class LogServer(BaseHTTPRequestHandler):
     body = json.loads(post_data)
 
     message = body["message"]
-    project = body["project"]
+    project_id = body["project_id"]
    
-    save_message(message, project)
+    save_message(message, project_id)
 
     self._set_response()
     self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
