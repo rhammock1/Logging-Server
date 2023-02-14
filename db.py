@@ -47,9 +47,11 @@ def db_file(filepath, *args):
     connection.rollback() # I don't know if this is necessary
 
 def migrate():
-  # Select db_version from db_versions table
-  # If it doesn't exist, create it
-  # If it does exist, run the migrations that are greater than the current version
+  """
+  Select db_version from db_versions table
+  Sort db_migrate files by number
+  Run migrations that are greater than the current version
+  """
   try:
     database.execute("SELECT db_version FROM db_versions ORDER BY db_version DESC LIMIT 1")
     ((db_version),) = database.fetchone()
@@ -70,6 +72,9 @@ def migrate():
     logging.error("Error while migrating the database", error)
 
 def connect_to_db():
+  """
+  Connects to the database using the DATABASE_URL environment variable.
+  """
   try:
     result = urlparse(os.getenv("DATABASE_URL"))
     username = result.username
@@ -94,6 +99,9 @@ def connect_to_db():
     logging.error("Error while connecting to database", error)
 
 def close_db_connection():
+  """
+  Closes the database connection.
+  """
   try:
     if connection:
       database.close()

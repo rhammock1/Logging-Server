@@ -13,6 +13,9 @@ from db import *
 load_dotenv()
 
 def save_message(message, project_id):
+  """
+  Saves a message to the database.
+  """
   try:
     result = db_file("db/messages/insert.sql", (message, project_id,))
     if result is None:
@@ -24,6 +27,9 @@ def save_message(message, project_id):
 
 
 def get_messages():
+  """
+  Gets all messages from the database.
+  """
   try:
     result = db_file("db/messages/get.sql")
     if result is None:
@@ -35,12 +41,18 @@ def get_messages():
     logging.error("Error while getting message", error)
 
 class LogServer(BaseHTTPRequestHandler):
-  def _set_response(self):
-    self.send_response(200)
+  def _set_response(self, status_code=200):
+    """
+    Sets response status and headers
+    """
+    self.send_response(status_code)
     self.send_header('Content-type', 'application/json')
     self.end_headers()
 
   def do_GET(self):
+    """
+    On GET request, get all messages from the database.
+    """
     logging.info(
       "GET request, \nPath: %s\nHeaders:\n%s\n", 
       str(self.path), 
@@ -52,6 +64,10 @@ class LogServer(BaseHTTPRequestHandler):
     self.wfile.write(json.dumps(messages, indent=2, default=str).encode('utf-8'))
 
   def do_POST(self):
+    """
+    On POST request, get the message and project_id from the body
+    and save it to the database.
+    """
     content_length = int(self.headers['Content-Length'])
     post_data = self.rfile.read(content_length)
 
@@ -66,6 +82,9 @@ class LogServer(BaseHTTPRequestHandler):
     self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
 def run(server_class=HTTPServer, handler_class=LogServer, port=8000):
+  """
+  Starts the server.
+  """
   logging.basicConfig(level=logging.INFO)
   server_address = ('', port)
   httpd = server_class(server_address, handler_class)
