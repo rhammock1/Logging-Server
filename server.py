@@ -4,11 +4,12 @@
   Credit: <mdonkers> github.com/mdonkers for the basic web server
 """
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import HTTPServer
 from dotenv import load_dotenv
 import logging
 import json
 from db import *
+import LogServer
 
 load_dotenv()
 
@@ -39,107 +40,6 @@ def get_messages():
     return result
   except Exception as error:
     logging.error("Error while getting message", error)
-
-class LogServer(BaseHTTPRequestHandler):
-  # Define the routes
-  routes = {
-    "/": "on_base",
-    "/projects": "on_projects",
-    "/projects/:project_id": "on_project",
-    "/messages": "on_messages",
-  }
-
-  def _set_response(self, status_code=200):
-    """
-    Sets response status and headers
-    """
-    self.send_response(status_code)
-    self.send_header('Content-type', 'application/json')
-    self.end_headers()
-
-  def on_base(self, method):
-    if method == "GET":
-      print("Getting Base")
-      self._set_response()
-      self.wfile.write("Getting Base".encode('utf-8'))
-    elif method == "POST":
-      print("Posting Base")
-      self._set_response()
-      self.wfile.write("Posting Base".encode('utf-8'))
-    else:
-      self._set_response(404)
-      self.wfile.write("Not Found".encode('utf-8'))
-
-  def on_projects(self, method):
-    if method == "GET":
-      print("Getting projects")
-      self._set_response()
-      self.wfile.write("Getting projects".encode('utf-8'))
-    elif method == "POST":
-      print("Posting projects")
-      self._set_response()
-      self.wfile.write("Posting projects".encode('utf-8'))
-    else:
-      self._set_response(404)
-      self.wfile.write("Not Found".encode('utf-8'))
-
-  def on_project(self, method):
-    if method == "GET":
-      print("Getting project")
-      self._set_response()
-      self.wfile.write("Getting project".encode('utf-8'))
-    elif method == "POST":
-      print("Posting project")
-      self._set_response()
-      self.wfile.write("Posting project".encode('utf-8'))
-    else:
-      self._set_response(404)
-      self.wfile.write("Not Found".encode('utf-8'))
-
-  def on_messages(self, method):
-    if method == "GET":
-      print("Getting messages")
-      self._set_response()
-      self.wfile.write("Getting messages".encode('utf-8'))
-    else:
-      self._set_response(404)
-      self.wfile.write("Not Found".encode('utf-8'))
-
-  def do_GET(self):
-    """
-    On GET request, get all messages from the database.
-    """
-    logging.info(
-      "GET request, \nPath: %s\nHeaders:\n%s\n", 
-      str(self.path), 
-      str(self.headers)
-    )
-    # check if the path is in the routes
-    if self.path in self.routes:
-      method_name = self.routes[self.path]
-      method = getattr(self, method_name)
-      method("GET")
-    else:
-      self._set_response(404)
-      self.wfile.write("Not Found".encode('utf-8'))
-
-  def do_POST(self):
-    """
-    On POST request, get the message and project_id from the body
-    and save it to the database.
-    """
-    content_length = int(self.headers['Content-Length'])
-    post_data = self.rfile.read(content_length)
-
-    body = json.loads(post_data)
-
-    message = body["message"]
-    project_id = body["project_id"]
-   
-    save_message(message, project_id)
-
-    self._set_response()
-    self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
 def run(server_class=HTTPServer, handler_class=LogServer, port=8000):
   """
