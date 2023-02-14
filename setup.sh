@@ -45,6 +45,6 @@ echo "DATABASE_URL=postgres://$USER@localhost:5432/logging_server" >> .env
 
 # Make serve.sh executable
 echo "Making serve.sh executable..."
-chmod +x ./serve.sh
+chmod +x serve.sh
 
 echo "Setup complete. Run ./serve.sh to start the server."
