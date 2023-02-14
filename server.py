@@ -41,6 +41,14 @@ def get_messages():
     logging.error("Error while getting message", error)
 
 class LogServer(BaseHTTPRequestHandler):
+  # Define the routes
+  routes = {
+    "/": "on_base",
+    "/projects": "on_projects",
+    "/projects/:project_id": "on_project",
+    "/messages": "on_messages",
+  }
+
   def _set_response(self, status_code=200):
     """
     Sets response status and headers
@@ -48,6 +56,26 @@ class LogServer(BaseHTTPRequestHandler):
     self.send_response(status_code)
     self.send_header('Content-type', 'application/json')
     self.end_headers()
+
+  def on_base(self):
+    print("Getting Base")
+    self._set_response()
+    self.wfile.write("Getting Base".encode('utf-8'))
+
+  def on_projects(self):
+    print("Getting projects")
+    self._set_response()
+    self.wfile.write("Getting projects".encode('utf-8'))
+
+  def on_project(self):
+    print("Getting project", self.path)
+    self._set_response()
+    self.wfile.write("Getting project".encode('utf-8'))
+
+  def on_messages(self):
+    print("Getting messages")
+    self._set_response()
+    self.wfile.write("Getting messages".encode('utf-8'))
 
   def do_GET(self):
     """
@@ -58,10 +86,17 @@ class LogServer(BaseHTTPRequestHandler):
       str(self.path), 
       str(self.headers)
     )
-    messages = get_messages()
-
-    self._set_response()
-    self.wfile.write(json.dumps(messages, indent=2, default=str).encode('utf-8'))
+    # check if the path is in the routes
+    if self.path in self.routes:
+      # get the method name from the routes
+      method_name = self.routes[self.path]
+      # get the method from 'self'.
+      method = getattr(self, method_name)
+      # call the method as we return it
+      return method()
+    else:
+      self._set_response(404)
+      self.wfile.write("Not Found".encode('utf-8'))
 
   def do_POST(self):
     """
