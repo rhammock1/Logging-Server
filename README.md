@@ -21,12 +21,6 @@ This server will not run constantly, but will be started when needed
 
 ### TODO
 * Add dynamic project routes
-  * Add projects table 
-  * SELECT * FROM projects WHERE project_name = 'project_name'
-  * If project exists return project_id
   * GET logs for project_id
-* Read SQL files from migrations folder
-* Add database migrations
-* Move queries to SQL files
 * Add Queue to store logs prior to batch database insert
 * Add configuration script to get project started on a new machine
