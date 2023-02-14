@@ -1,16 +1,34 @@
 from http.server import BaseHTTPRequestHandler
 import logging
 import json
+import re
 from actions.messages import save_message, get_messages
 
 
 class LogServer(BaseHTTPRequestHandler):
   # Define the routes
   routes = {
-      "/": "on_base",
-      "/projects": "on_projects",
-      "/projects/:project_id": "on_project",
-      "/messages": "on_messages",
+      "/": {
+        "method": "on_base",
+        "expects": ["GET"],
+      },
+      "/projects": {
+        "method": "on_projects",
+        "expects": ["GET", "POST"],
+        },
+      "/projects/:project_id": {
+        "method": "on_project",
+        "expects": ["GET", "POST"],
+        # Regex to match a number ending the path
+        "regex": r"/projects/(\d+)"
+        },
+      "/messages": {
+        "method": "on_messages",
+        "expects": ["GET", "POST"],
+      },
+      # r"/projects/(\d+)": {
+      #   "method": "on_project",
+      # }
   }
 
   def _set_response(self, status_code=200):
@@ -44,6 +62,7 @@ class LogServer(BaseHTTPRequestHandler):
       self.wfile.write("Not Found".encode('utf-8'))
 
   def on_project(self, method):
+    print(method)
     if method == "GET":
       print("Getting project")
       self._set_response()
@@ -82,9 +101,21 @@ class LogServer(BaseHTTPRequestHandler):
     """
     On GET request, get all messages from the database.
     """
+    # Check if the path is a dynamic route
+    dynamic_routes = [key for key in self.routes if '/:' in key]
+    print(dynamic_routes)
+    for route in dynamic_routes:
+      # Check if the path matches the regex
+      if re.match(self.routes[route]['regex'], self.path):
+        method_name = self.routes[route]['method']
+        print(method_name)
+        method = getattr(self, method_name)
+        method("GET")
+        return
     # check if the path is in the routes
     if self.path in self.routes:
-      method_name = self.routes[self.path]
+      print(self.routes[self.path]['method'])
+      method_name = self.routes[self.path]['method']
       method = getattr(self, method_name)
       method("GET")
     else:
@@ -96,8 +127,20 @@ class LogServer(BaseHTTPRequestHandler):
     On POST request, get the message and project_id from the body
     and save it to the database.
     """
+    # Check if the path is a dynamic route
+    dynamic_routes = [key for key in self.routes if '/:' in key]
+    print(dynamic_routes)
+    for route in dynamic_routes:
+      # Check if the path matches the regex
+      if re.match(self.routes[route]['regex'], self.path):
+        method_name = self.routes[route]['method']
+        method = getattr(self, method_name)
+        method("POST")
+        return
+      # exit the 
     if self.path in self.routes:
-      method_name = self.routes[self.path]
+      print(self.routes[self.path])
+      method_name = self.routes[self.path]['method']
       method = getattr(self, method_name)
       method("POST")
     else:
