@@ -47,8 +47,9 @@ class LogServer(BaseHTTPRequestHandler):
   def on_projects(self, method):
     if method == "GET":
       print("Getting projects")
+      projects = get_projects()
       self._set_response()
-      self.wfile.write("Getting projects".encode('utf-8'))
+      self.wfile.write(json.dumps(projects, indent=2, default=str).encode('utf-8'))
     elif method == "POST":
       print("Posting projects")
       self._set_response()
@@ -61,12 +62,18 @@ class LogServer(BaseHTTPRequestHandler):
     print(method)
     if method == "GET":
       print("Getting project")
+      project_id = re.replace(r"/projects/", "", self.path)
+      print(project_id)
+      project = get_project()
       self._set_response()
-      self.wfile.write("Getting project".encode('utf-8'))
+      self.wfile.write(json.dumps(project, indent=2, default=str).encode('utf-8'))
     elif method == "POST":
       print("Posting project")
+      body = self.get_body()
+      project_name = body["project_name"]
+      project = save_project(project_name)
       self._set_response()
-      self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
+      self.wfile.write(json.dumps(project, indent=2, default=str).encode('utf-8'))
     else:
       self._set_response(404)
       self.wfile.write("Not Found".encode('utf-8'))
@@ -74,13 +81,11 @@ class LogServer(BaseHTTPRequestHandler):
   def on_messages(self, method):
     if method == "GET":
       print("Getting messages")
+      messages = get_messages()
       self._set_response()
-      self.wfile.write("Getting messages".encode('utf-8'))
+      self.wfile.write(json.dumps(messages, indent=2, default=str).encode('utf-8'))
     elif method == "POST":
-      content_length = int(self.headers['Content-Length'])
-      post_data = self.rfile.read(content_length)
-
-      body = json.loads(post_data)
+      body = self.get_body()
 
       message = body["message"]
       project_id = body["project_id"]
@@ -92,8 +97,13 @@ class LogServer(BaseHTTPRequestHandler):
     else:
       self._set_response(404)
       self.wfile.write("Not Found".encode('utf-8'))
+
+  def get_body(self):
+    content_length = int(self.headers['Content-Length'])
+    body = json.loads(self.rfile.read(content_length))
+    return body
   
-  def get_route(self, method):
+  def get_route(self, request_method):
     """
     Gets the route from the routes dictionary and calls the method.
     Returns True if the route is found, False otherwise.
@@ -105,7 +115,7 @@ class LogServer(BaseHTTPRequestHandler):
         method_name = self.routes[key]['method']
         print(method_name)
         method = getattr(self, method_name)
-        method("POST")
+        method(request_method)
         matched = True
         break
     return matched
@@ -118,7 +128,6 @@ class LogServer(BaseHTTPRequestHandler):
 
   def do_POST(self):
     matched = self.get_route('POST')
-    
     if not matched:
       self._set_response(404)
       self.wfile.write("Not Found".encode('utf-8'))
