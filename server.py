@@ -8,7 +8,7 @@ from http.server import HTTPServer
 from dotenv import load_dotenv
 import logging
 from db import *
-import LogServer
+from LogServer import LogServer
 
 load_dotenv()
 
