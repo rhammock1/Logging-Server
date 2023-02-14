@@ -52,11 +52,7 @@ def migrate():
   # If it does exist, run the migrations that are greater than the current version
   try:
     database.execute("SELECT db_version FROM db_versions ORDER BY db_version DESC LIMIT 1")
-    (db_version) = database.fetchone()
-    if db_version is None:
-      print("Creating db_versions table...")
-      database.execute("CREATE TABLE db_versions (db_version BIGSERIAL, created TIMESTAMPTZ DEFAULT NOW())")
-      database.execute("INSERT INTO db_versions (db_version) VALUES (0)")
+    ((db_version),) = database.fetchone()
     logging.info("Current database version: {}".format(db_version))
 
     # Run migrations
@@ -67,7 +63,8 @@ def migrate():
         print("Running migration: {}".format(migration))
         db_file("db/db_migrate/{}".format(migration))
         database.execute("INSERT INTO db_versions (db_version) VALUES ({})".format(migration_number))
-
+        connection.commit()
+        logging.info("Migration {} complete".format(migration_number))
   except (Exception, psycopg2.Error) as error:
     logging.error("Error while migrating the database", error)
 
