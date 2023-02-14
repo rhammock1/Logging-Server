@@ -57,6 +57,7 @@ def migrate():
 
     # Run migrations
     migrations = os.listdir("db/db_migrate")
+    migrations.sort()
     for migration in migrations:
       migration_number = int(migration.split(".")[0])
       if migration_number > db_version:
