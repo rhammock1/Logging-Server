@@ -62,7 +62,7 @@ class LogServer(BaseHTTPRequestHandler):
     print(method)
     if method == "GET":
       print("Getting project")
-      project_id = re.replace(r"/projects/", "", self.path)
+      project_id = re.sub(r"/projects/", "", self.path)
       print(project_id)
       project = get_project()
       self._set_response()
