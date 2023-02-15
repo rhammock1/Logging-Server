@@ -42,6 +42,21 @@ pip install -r requirements.txt
 # Create .env file
 echo "Creating .env file..."
 echo "DATABASE_URL=postgres://$USER@localhost:5432/logging_server" >> .env
+echo "PORT=8080" >> .env
+
+# Prompt user to decide whether to use SSL
+echo "Do you want to generate an SSL cert? (y/n)"
+read -r USE_SSL
+
+if [ "$USE_SSL" = "y" ]; then
+  # Generate SSL cert
+  echo "Generating SSL cert..."
+  echo "You will be prompted to enter some information."
+  openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365
+  echo "Adding SSL cert and key paths to .env..."
+  echo "SSL_KEY_PATH=key.pem" >> .env
+  echo "SSL_CERT_PATH=cert.pem" >> .env
+fi
 
 # Make serve.sh executable
 echo "Making serve.sh executable..."
