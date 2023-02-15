@@ -56,6 +56,12 @@ if [ "$USE_SSL" = "y" ]; then
   echo "Adding SSL cert and key paths to .env..."
   echo "SSL_KEY_PATH=key.pem" >> .env
   echo "SSL_CERT_PATH=cert.pem" >> .env
+else 
+  echo "Not generating SSL cert."
+  echo "If you want to generate an SSL cert later, run the following commands:"
+  echo "openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365"
+  echo "echo \"SSL_KEY_PATH=key.pem\" >> .env"
+  echo "echo \"SSL_CERT_PATH=cert.pem\" >> .env"
 fi
 
 # Make serve.sh executable
